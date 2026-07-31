@@ -61,19 +61,23 @@
     .btn-secondary { background: #e9ecef; color: #495057; }
     .btn-danger { background: #fa5252; color: white; }
     
-    /* --- アカウント作成画面 --- */
+    /* --- アカウント作成画面（絵文字なし・趣味増量版） --- */
     .hobby-checkboxes {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
       margin: 10px 0;
     }
     .hobby-label {
       background: #f1f3f5;
-      padding: 10px;
+      padding: 8px 6px;
       border-radius: 8px;
       cursor: pointer;
       font-weight: normal;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     /* --- カレンダー画面 --- */
@@ -111,7 +115,7 @@
       gap: 10px;
       margin-top: 10px;
     }
-    .tag-btn { background: #f1f3f5; font-size: 14px; padding: 10px; margin: 0; }
+    .tag-btn { background: #f1f3f5; font-size: 13px; padding: 10px 5px; margin: 0; }
     .tag-btn.selected { background: #fab005; color: white; }
     
     /* --- ゲームUI & ポップアップ --- */
@@ -189,7 +193,7 @@
 
   <!-- 0. ログイン画面 -->
   <div id="sec-login" class="app-section active">
-    <h2 style="margin-top: 50px;">賢い消費者家計簿</h2>
+    <h2 style="margin-top: 50px;">賢い消費者家計簿Ver.2</h2>
     <p style="text-align: center; color: #868e96; font-size: 14px;">ログインして始めよう</p>
     
     <label>ユーザーネーム</label>
@@ -232,13 +236,23 @@
     <label>今持っている金額 (円)</label>
     <input type="number" id="acc-balance" placeholder="例：3000">
 
-    <label>君の趣味 (複数選んでね)</label>
+    <label>君の趣味 (複数選んでね！)</label>
     <div class="hobby-checkboxes">
-      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="ゲーム" checked> [ゲーム・課金]</label>
-      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="マンガ・アニメ"> [マンガ・アニメ]</label>
-      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="推し活・アイドル"> [推し活・アイドル]</label>
-      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="買い食い・お菓子"> [買い食い・お菓子]</label>
-      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="ファッション"> [ファッション・コスメ]</label>
+      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="ゲーム・課金" checked> ゲーム・課金</label>
+      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="マンガ・本"> マンガ・本</label>
+      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="アニメ・グッズ"> アニメ・グッズ</label>
+      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="推し活・アイドル"> 推し活・アイドル</label>
+      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="買い食い・お菓子"> 買い食い・お菓子</label>
+      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="カフェ・ジュース"> カフェ・ジュース</label>
+      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="服・コスメ・おしゃれ"> 服・コスメ・おしゃれ</label>
+      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="文房具・雑貨"> 文房具・雑貨</label>
+      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="カラオケ・プリクラ"> カラオケ・プリクラ</label>
+      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="映画・イベント"> 映画・イベント</label>
+      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="トレカ・カード"> トレカ・カード</label>
+      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="ガチャガチャ"> ガチャガチャ</label>
+      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="スポーツ・部活"> スポーツ・部活</label>
+      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="音楽・楽器"> 音楽・楽器</label>
+      <label class="hobby-label"><input type="checkbox" class="hobby-cb" value="パソコン・ガジェット"> PC・ガジェット</label>
     </div>
     
     <button class="btn-primary" onclick="goToRegisterStep2()">次へ進む</button>
@@ -848,7 +862,7 @@
   }
 
   function triggerLevelUpEffects(oldLvl, newLvl) {
-    document.getElementById('levelup-text').innerText = `Lv.${oldLvl} → Lv.${newLvl}`;
+    document.getElementById('levelup-text').innerText = `Lv.${oldLvl} -> Lv.${newLvl}`;
     document.getElementById('levelup-title-text').innerText = `新しい称号：${getTitle(newLvl)}`;
     const overlay = document.getElementById('levelup-overlay');
     overlay.classList.add('show');
