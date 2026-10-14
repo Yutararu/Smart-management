@@ -2,12 +2,10 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>賢い消費者家計簿（中学生向け）</title>
-  <!-- Chart.jsの読み込み -->
+  <title>消費者家計簿（中学生向け）</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <style>
-    /* --- 基本スタイル --- */
     body {
       font-family: 'Helvetica Neue', Arial, sans-serif;
       background-color: #f0f2f5;
@@ -60,8 +58,8 @@
     .btn-primary { background: #4dabf7; color: white; }
     .btn-secondary { background: #e9ecef; color: #495057; }
     .btn-danger { background: #fa5252; color: white; }
+    .btn-success { background: #40c057; color: white; }
     
-    /* --- アカウント作成画面（絵文字なし・趣味増量版） --- */
     .hobby-checkboxes {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -80,7 +78,6 @@
       gap: 4px;
     }
 
-    /* --- カレンダー画面 --- */
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -97,12 +94,13 @@
       background: #f8f9fa;
       font-size: 14px;
       cursor: pointer;
+      box-sizing: border-box;
     }
+    .bg-today { border: 2px solid #228be6; font-weight: bold; background-color: #e7f5ff; }
     .bg-needs { background-color: #d0ebff !important; color: #1c7ed6; font-weight: bold; } 
     .bg-wants { background-color: #ffe3e3 !important; color: #e03131; font-weight: bold; } 
     .bg-both  { background-color: #eebefa !important; color: #ae3ec9; font-weight: bold; } 
 
-    /* --- 入力画面 --- */
     .type-selectors, .nw-selectors { display: flex; gap: 10px; margin-top: 5px; }
     .type-btn, .nw-btn { flex: 1; background: #e9ecef; color: #495057; }
     .type-btn.selected { background: #339af0; color: white; }
@@ -118,7 +116,6 @@
     .tag-btn { background: #f1f3f5; font-size: 13px; padding: 10px 5px; margin: 0; }
     .tag-btn.selected { background: #fab005; color: white; }
     
-    /* --- ゲームUI & ポップアップ --- */
     .status-card {
       background: linear-gradient(135deg, #e7f5ff, #d0ebff);
       padding: 15px;
@@ -138,6 +135,21 @@
     .xp-bar-container { background: #e9ecef; height: 10px; border-radius: 5px; margin-top: 8px; overflow: hidden; }
     .xp-bar-fill { background: linear-gradient(90deg, #4dabf7, #339af0); height: 100%; width: 0%; transition: width 0.8s ease; }
 
+    .streak-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff3bf;
+      color: #f59f00;
+      border: 1px solid #ffe066;
+      border-radius: 12px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: bold;
+      margin-top: 10px;
+      text-align: center;
+    }
+
     .levelup-overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -154,7 +166,6 @@
     .levelup-card { background: white; width: 280px; padding: 30px 20px; border-radius: 24px; text-align: center; }
     .sparkle { position: absolute; width: 8px; height: 8px; border-radius: 50%; opacity: 0; }
 
-    /* 管理者画面用 */
     .admin-user-card {
       background: #f1f3f5;
       border-radius: 12px;
@@ -164,7 +175,42 @@
       position: relative;
     }
 
-    /* フッターナビ */
+    /* 実績カードスタイル */
+    .achievement-card {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .achievement-card.completed {
+      background: #e6fcf5;
+      border-color: #63e6be;
+    }
+    .achievement-info {
+      flex: 1;
+      padding-right: 10px;
+    }
+    .achievement-title {
+      font-weight: bold;
+      font-size: 14px;
+      color: #333;
+    }
+    .achievement-desc {
+      font-size: 11px;
+      color: #666;
+      margin-top: 2px;
+    }
+    .achievement-reward {
+      font-size: 11px;
+      font-weight: bold;
+      color: #fab005;
+      margin-top: 4px;
+    }
+
     .nav-bar {
       height: 60px;
       border-top: 1px solid #dee2e6;
@@ -173,7 +219,7 @@
       align-items: center;
       background: #f8f9fa;
     }
-    .nav-item { cursor: pointer; font-size: 16px; font-weight: bold; color: #495057; }
+    .nav-item { cursor: pointer; font-size: 15px; font-weight: bold; color: #495057; }
     .nav-item.active-nav { color: #339af0; }
   </style>
 </head>
@@ -181,7 +227,6 @@
 
 <div class="phone-screen">
 
-  <!-- レベルアップ時の演出用 -->
   <div id="levelup-overlay" class="levelup-overlay" onclick="closeLevelUp()">
     <div class="levelup-card">
       <h3 style="font-size: 28px; color: #fab005; margin: 10px 0;">LEVEL UP!!</h3>
@@ -191,9 +236,8 @@
     </div>
   </div>
 
-  <!-- 0. ログイン画面 -->
   <div id="sec-login" class="app-section active">
-    <h2 style="margin-top: 50px;">賢い消費者家計簿Ver.2</h2>
+    <h2 style="margin-top: 50px;">賢い消費者家計簿Ver.1.3.0</h2>
     <p style="text-align: center; color: #868e96; font-size: 14px;">ログインして始めよう</p>
     
     <label>ユーザーネーム</label>
@@ -206,7 +250,6 @@
     <button class="btn-secondary" onclick="goToRegisterStep1()">新しくアカウントを作る</button>
   </div>
 
-  <!-- 1-1. アカウント作成画面（ステップ1：プロフィール） -->
   <div id="sec-account-step1" class="app-section">
     <h2>プロフィール登録 (1/2)</h2>
     
@@ -233,8 +276,8 @@
     <label>生年月日 (誕生年)</label>
     <input type="text" id="acc-birthyear-display" placeholder="自動計算されます" readonly style="background-color: #e9ecef;">
     
-    <label>今持っている金額 (円)</label>
-    <input type="number" id="acc-balance" placeholder="例：3000">
+    <label>今持っている金額 (円) ※最大100万円まで</label>
+    <input type="number" id="acc-balance" placeholder="例：3000" max="1000000">
 
     <label>君の趣味 (複数選んでね！)</label>
     <div class="hobby-checkboxes">
@@ -259,7 +302,6 @@
     <button class="btn-secondary" onclick="switchSection('login')">戻る</button>
   </div>
 
-  <!-- 1-2. アカウント作成画面（ステップ2：パスワード） -->
   <div id="sec-account-step2" class="app-section">
     <h2>ログイン設定 (2/2)</h2>
     <p style="font-size: 13px; color: #868e96; text-align: center;">次回からログインするときに使います</p>
@@ -274,25 +316,24 @@
     <button class="btn-secondary" onclick="switchSection('account-step1')">戻る</button>
   </div>
 
-  <!-- 2. ホーム画面（グラフ＆ゲームステータス） -->
   <div id="sec-home" class="app-section">
     <div style="display: flex; justify-content: space-between; align-items: center;">
       <h2 id="home-welcome" style="font-size: 18px; margin: 0;">こんにちは</h2>
       <button class="btn-secondary" style="width: auto; padding: 6px 12px; margin: 0; font-size: 12px;" onclick="logout()">ログアウト</button>
     </div>
     
-    <!-- ゲームステータスカード -->
     <div class="status-card" style="margin-top: 15px;">
       <div style="display: flex; align-items: center; justify-content: space-between;">
         <div>
           <span class="level-badge" id="status-level">Lv.1</span>
-          <span class="title-badge" id="status-title">お金見習い</span>
+          <span class="title-badge" id="status-title">お買い物見習い</span>
         </div>
-        <div id="status-xp-text" style="font-size: 12px; color: #495057; font-weight: bold;">0 / 50 XP</div>
+        <div id="status-xp-text" style="font-size: 12px; color: #495057; font-weight: bold;">0 / 30 XP</div>
       </div>
       <div class="xp-bar-container">
         <div class="xp-bar-fill" id="status-xp-bar"></div>
       </div>
+      <div class="streak-badge" id="status-streak">連続記録：1日目</div>
     </div>
 
     <p id="home-birth-year" style="text-align: center; font-size: 12px; color: #868e96; margin: -5px 0 15px 0;"></p>
@@ -303,9 +344,8 @@
     <div id="home-summary" style="text-align: center; margin-top: 10px; font-size: 14px; color: #666;"></div>
   </div>
 
-  <!-- 3. カレンダー画面 -->
   <div id="sec-calendar" class="app-section">
-    <h2>2026年 7月</h2>
+    <h2 id="calendar-title"></h2>
     <div class="calendar-grid">
       <div class="calendar-day-name">日</div><div class="calendar-day-name">月</div><div class="calendar-day-name">火</div>
       <div class="calendar-day-name">水</div><div class="calendar-day-name">木</div><div class="calendar-day-name">金</div>
@@ -314,7 +354,20 @@
     <div id="calendar-days" class="calendar-grid"></div>
   </div>
 
-  <!-- 4. 入力画面 -->
+  <div id="sec-achievements" class="app-section">
+    <h2>実績・ミッション</h2>
+    <div class="status-card" style="margin-bottom: 15px; background: linear-gradient(135deg, #fff9db, #fff3bf);">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-weight: bold; font-size: 14px; color: #f59f00;">達成率</span>
+        <span id="achievement-progress-text" style="font-weight: bold; font-size: 14px; color: #f59f00;">0 / 30</span>
+      </div>
+      <div class="xp-bar-container">
+        <div class="xp-bar-fill" id="achievement-progress-bar" style="background: linear-gradient(90deg, #fab005, #f59f00);"></div>
+      </div>
+    </div>
+    <div id="achievement-list"></div>
+  </div>
+
   <div id="sec-input" class="app-section">
     <h2>お財布に記録</h2>
     <p id="target-date-display" style="text-align:center; font-weight:bold; color:#666;"></p>
@@ -343,114 +396,309 @@
     <button class="btn-primary" style="background:#2b8a3e;" onclick="saveTransaction()">保存して10XPゲット！</button>
   </div>
 
-  <!-- 5. 管理者用画面（データ全閲覧＆ユーザー削除） -->
   <div id="sec-admin" class="app-section">
     <div style="display: flex; justify-content: space-between; align-items: center;">
       <h2>管理者ページ</h2>
       <button class="btn-secondary" style="width: auto; padding: 6px 12px; margin: 0; font-size: 12px;" onclick="logout()">ログアウト</button>
     </div>
-    <p style="font-size: 12px; color: #e03131; text-align: center; font-weight: bold;">すべてのユーザーデータを表示中</p>
+    <p style="font-size: 12px; color: #e03131; text-align: center; font-weight: bold;">重複アカウントは1つに自動統合して表示中</p>
     
     <div id="admin-user-list" style="margin-top: 15px;"></div>
   </div>
 
-  <!-- フッターナビゲーション -->
   <div id="app-nav" class="nav-bar" style="display:none;">
     <div id="nav-home" class="nav-item" onclick="switchSection('home')">グラフ</div>
     <div id="nav-calendar" class="nav-item" onclick="switchSection('calendar')">カレンダー</div>
+    <div id="nav-achievements" class="nav-item" onclick="switchSection('achievements')">実績</div>
   </div>
 
 </div>
 
-<!-- Firebase SDK とメインロジック -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { 
+    getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { 
+    getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, query, where, writeBatch 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyByXtqiOBBHl8pJcOM8CDzta7n5fSv4OgI",
-    authDomain: "smart-management-6dee4.firebaseapp.com",
-    projectId: "smart-management-6dee4",
-    storageBucket: "smart-management-6dee4.firebasestorage.app",
-    messagingSenderId: "464761501009",
-    appId: "1:464761501009:web:b4b9d79412594d09054f70"
+    apiKey: "AIzaSyCZ6OjyojsJatEYUIbhKVvmdE0knL6XoTE",
+    authDomain: "smart-consumer-app-ce9d3.firebaseapp.com",
+    projectId: "smart-consumer-app-ce9d3",
+    storageBucket: "smart-consumer-app-ce9d3.firebasestorage.app",
+    messagingSenderId: "78459033419",
+    appId: "1:78459033419:web:a685537d9e863e47a6face",
+    measurementId: "G-FQ5MTM9BFJ"
   };
 
   const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
   const db = getFirestore(app);
+
+  const ADMIN_EMAIL = "admin@smart-consumer.com";
+
+  const MAX_BALANCE = 1000000; 
 
   let myUID = ""; 
   let userAccount = null;
   let transactionHistory = []; 
-  let selectedDate = "2026-07-10"; 
+  let selectedDate = ""; 
   let currentType = "支出";
   let currentNW = "";
   let currentTag = "";
   let chartInstance = null; 
   let tempProfile = null;
 
-  // 累計必要XPの計算関数（レベルごとの必要XP増加ロジック）
+  const MASTER_ACHIEVEMENTS = [
+    { id: "rec_1", title: "はじめの一歩", desc: "家計簿の記録を1回行う", reward: 20, check: (u, h) => h.length >= 1 },
+    { id: "rec_3", title: "三日坊主回避", desc: "家計簿の記録を3回行う", reward: 25, check: (u, h) => h.length >= 3 },
+    { id: "rec_5", title: "記録の習慣化", desc: "家計簿の記録を5回行う", reward: 30, check: (u, h) => h.length >= 5 },
+    { id: "rec_10", title: "家計簿マスター手前", desc: "家計簿の記録を10回行う", reward: 50, check: (u, h) => h.length >= 10 },
+    { id: "rec_15", title: "順調なメモ魔", desc: "家計簿の記録を15回行う", reward: 65, check: (u, h) => h.length >= 15 },
+    { id: "rec_20", title: "記録のベテラン予備軍", desc: "家計簿の記録を20回行う", reward: 75, check: (u, h) => h.length >= 20 },
+    { id: "rec_25", title: "しっかり者", desc: "家計簿の記録を25回行う", reward: 80, check: (u, h) => h.length >= 25 },
+    { id: "rec_35", title: "日常の一コマ", desc: "家計簿の記録を35回行う", reward: 100, check: (u, h) => h.length >= 35 },
+    { id: "rec_50", title: "記録のベテラン", desc: "家計簿の記録を50回行う", reward: 120, check: (u, h) => h.length >= 50 },
+    { id: "rec_65", title: "折り返し地点", desc: "家計簿の記録を65回行う", reward: 150, check: (u, h) => h.length >= 65 },
+    { id: "rec_75", title: "継続のプロ", desc: "家計簿の記録を75回行う", reward: 180, check: (u, h) => h.length >= 75 },
+    { id: "rec_90", title: "あと少しで100!", desc: "家計簿の記録を90回行う", reward: 220, check: (u, h) => h.length >= 90 },
+    { id: "rec_100", title: "記録の達人", desc: "家計簿の記録を100回行う", reward: 250, check: (u, h) => h.length >= 100 },
+    { id: "rec_150", title: "家計簿のレジェンド", desc: "家計簿の記録を150回行う", reward: 350, check: (u, h) => h.length >= 150 },
+    { id: "rec_200", title: "神業記録者", desc: "家計簿の記録を200回行う", reward: 500, check: (u, h) => h.length >= 200 },
+
+    { id: "needs_1", title: "必要なものを見直す", desc: "Needs（必要）の支出を1回記録", reward: 20, check: (u, h) => h.filter(i => i.category === 'Needs').length >= 1 },
+    { id: "needs_3", title: "生活の基本", desc: "Needs（必要）の支出を3回記録", reward: 30, check: (u, h) => h.filter(i => i.category === 'Needs').length >= 3 },
+    { id: "needs_5", title: "堅実な生活", desc: "Needs（必要）の支出を5回記録", reward: 40, check: (u, h) => h.filter(i => i.category === 'Needs').length >= 5 },
+    { id: "needs_10", title: "無駄づかいガード", desc: "Needs（必要）の支出を10回記録", reward: 60, check: (u, h) => h.filter(i => i.category === 'Needs').length >= 10 },
+    { id: "needs_15", title: "しっかり生活費", desc: "Needs（必要）の支出を15回記録", reward: 80, check: (u, h) => h.filter(i => i.category === 'Needs').length >= 15 },
+    { id: "needs_20", title: "生活管理マスター", desc: "Needs（必要）の支出を20回記録", reward: 100, check: (u, h) => h.filter(i => i.category === 'Needs').length >= 20 },
+    { id: "needs_30", title: "スマートな買い物術", desc: "Needs（必要）の支出を30回記録", reward: 150, check: (u, h) => h.filter(i => i.category === 'Needs').length >= 30 },
+    { id: "needs_45", title: "日用品の達人", desc: "Needs（必要）の支出を45回記録", reward: 200, check: (u, h) => h.filter(i => i.category === 'Needs').length >= 45 },
+    { id: "needs_60", title: "鉄壁のガード", desc: "Needs（必要）の支出を60回記録", reward: 300, check: (u, h) => h.filter(i => i.category === 'Needs').length >= 60 },
+
+    { id: "wants_1", title: "欲しいものを把握", desc: "Wants（欲望）の支出を1回記録", reward: 20, check: (u, h) => h.filter(i => i.category === 'Wants').length >= 1 },
+    { id: "wants_3", title: "ちょっとした楽しみ", desc: "Wants（欲望）の支出を3回記録", reward: 30, check: (u, h) => h.filter(i => i.category === 'Wants').length >= 3 },
+    { id: "wants_5", title: "自分へのご褒美", desc: "Wants（欲望）の支出を5回記録", reward: 40, check: (u, h) => h.filter(i => i.category === 'Wants').length >= 5 },
+    { id: "wants_10", title: "欲望コントロール", desc: "Wants（欲望）の支出を10回記録", reward: 60, check: (u, h) => h.filter(i => i.category === 'Wants').length >= 10 },
+    { id: "wants_15", title: "エンタメ満喫", desc: "Wants（欲望）の支出を15回記録", reward: 80, check: (u, h) => h.filter(i => i.category === 'Wants').length >= 15 },
+    { id: "wants_20", title: "計画的な楽しみ", desc: "Wants（欲望）の支出を20回記録", reward: 100, check: (u, h) => h.filter(i => i.category === 'Wants').length >= 20 },
+    { id: "wants_30", title: "バランス重視派", desc: "Wants（欲望）の支出を30回記録", reward: 150, check: (u, h) => h.filter(i => i.category === 'Wants').length >= 30 },
+    { id: "wants_45", title: "趣味の領域", desc: "Wants（欲望）の支出を45回記録", reward: 200, check: (u, h) => h.filter(i => i.category === 'Wants').length >= 45 },
+    { id: "wants_60", title: "人生を楽しむ天才", desc: "Wants（欲望）の支出を60回記録", reward: 300, check: (u, h) => h.filter(i => i.category === 'Wants').length >= 60 },
+
+    { id: "inc_1", title: "臨時収入", desc: "収入を1回記録する", reward: 20, check: (u, h) => h.filter(i => i.type === '収入').length >= 1 },
+    { id: "inc_3", title: "お小遣いゲット", desc: "収入を3回記録する", reward: 35, check: (u, h) => h.filter(i => i.type === '収入').length >= 3 },
+    { id: "inc_5", title: "資金管理", desc: "収入を5回記録する", reward: 50, check: (u, h) => h.filter(i => i.type === '収入').length >= 5 },
+    { id: "inc_10", title: "お小遣いブースター", desc: "収入を10回記録する", reward: 100, check: (u, h) => h.filter(i => i.type === '収入').length >= 10 },
+    { id: "inc_15", title: "ホクホク財布", desc: "収入を15回記録する", reward: 150, check: (u, h) => h.filter(i => i.type === '収入').length >= 15 },
+    { id: "inc_20", title: "マネーハンター", desc: "収入を20回記録する", reward: 200, check: (u, h) => h.filter(i => i.type === '収入').length >= 20 },
+    { id: "inc_30", title: "収入の達人", desc: "収入を30回記録する", reward: 300, check: (u, h) => h.filter(i => i.type === '収入').length >= 30 },
+
+    { id: "str_2", title: "2日連続アクセス", desc: "2日連続でアプリにログイン", reward: 20, check: (u) => (u.streak || 1) >= 2 },
+    { id: "str_3", title: "3日連続アクセス", desc: "3日連続でアプリにログイン", reward: 30, check: (u) => (u.streak || 1) >= 3 },
+    { id: "str_5", title: "5日連続アクセス", desc: "5日連続でアプリにログイン", reward: 50, check: (u) => (u.streak || 1) >= 5 },
+    { id: "str_7", title: "1週間連続アクセス", desc: "7日連続でアプリにログイン", reward: 70, check: (u) => (u.streak || 1) >= 7 },
+    { id: "str_10", title: "10日連続アクセス", desc: "10日連続でアプリにログイン", reward: 90, check: (u) => (u.streak || 1) >= 10 },
+    { id: "str_14", title: "2週間連続アクセス", desc: "14日連続でアプリにログイン", reward: 120, check: (u) => (u.streak || 1) >= 14 },
+    { id: "str_21", title: "3週間連続アクセス", desc: "21日連続でアプリにログイン", reward: 180, check: (u) => (u.streak || 1) >= 21 },
+    { id: "str_30", title: "1ヶ月連続アクセス", desc: "30日連続でアプリにログイン", reward: 200, check: (u) => (u.streak || 1) >= 30 },
+    { id: "str_45", title: "習慣化達成", desc: "45日連続でアプリにログイン", reward: 280, check: (u) => (u.streak || 1) >= 45 },
+    { id: "str_60", title: "2ヶ月連続アクセス", desc: "60日連続でアプリにログイン", reward: 350, check: (u) => (u.streak || 1) >= 60 },
+
+    { id: "bal_1000", title: "最初のお小遣い", desc: "お財布の残高が1,000円以上", reward: 20, check: (u, h) => calculateWallet(u, h) >= 1000 },
+    { id: "bal_3000", title: "プチ貯金", desc: "お財布の残高が3,000円以上", reward: 30, check: (u, h) => calculateWallet(u, h) >= 3000 },
+    { id: "bal_5000", title: "ちょっとした蓄え", desc: "お財布の残高が5,000円以上", reward: 40, check: (u, h) => calculateWallet(u, h) >= 5000 },
+    { id: "bal_10000", title: "1万円の大台", desc: "お財布の残高が10,000円以上", reward: 80, check: (u, h) => calculateWallet(u, h) >= 10000 },
+    { id: "bal_20000", title: "潤いウォレット", desc: "お財布の残高が20,000円以上", reward: 100, check: (u, h) => calculateWallet(u, h) >= 20000 },
+    { id: "bal_50000", title: "貯金上手", desc: "お財布の残高が50,000円以上", reward: 150, check: (u, h) => calculateWallet(u, h) >= 50000 },
+    { id: "bal_100000", title: "大富豪手前", desc: "お財布の残高が100,000円以上", reward: 200, check: (u, h) => calculateWallet(u, h) >= 100000 },
+    { id: "bal_500000", title: "資産家", desc: "お財布の残高が500,000円以上", reward: 400, check: (u, h) => calculateWallet(u, h) >= 500000 },
+
+    { id: "lvl_2", title: "見習い脱出", desc: "レベル2に到達する", reward: 30, check: (u) => u.level >= 2 },
+    { id: "lvl_3", title: "一歩ずつ前へ", desc: "レベル3に到達する", reward: 40, check: (u) => u.level >= 3 },
+    { id: "lvl_5", title: "一人前の買い手", desc: "レベル5に到達する", reward: 60, check: (u) => u.level >= 5 },
+    { id: "lvl_8", title: "中堅ユーザー", desc: "レベル8に到達する", reward: 90, check: (u) => u.level >= 8 },
+    { id: "lvl_10", title: "一人前マスター", desc: "レベル10に到達する", reward: 120, check: (u) => u.level >= 10 },
+    { id: "lvl_15", title: "熟練の消費者", desc: "レベル15に到達する", reward: 180, check: (u) => u.level >= 15 },
+    { id: "lvl_20", title: "お小遣いプロ", desc: "レベル20に到達する", reward: 250, check: (u) => u.level >= 20 },
+    { id: "lvl_30", title: "レジェンドバイヤー", desc: "レベル30に到達する", reward: 400, check: (u) => u.level >= 30 },
+
+    { id: "gen_under_100", title: "駄菓子感覚", desc: "100円未満の支出を記録する", reward: 15, check: (u, h) => h.some(i => i.type === "支出" && i.amount < 100) },
+    { id: "gen_under_500", title: "ワンコイン未満", desc: "500円未満の支出を記録する", reward: 20, check: (u, h) => h.some(i => i.type === "支出" && i.amount < 500) },
+    { id: "gen_exact_100", title: "100円均一", desc: "ちょうど100円の支出を記録する", reward: 20, check: (u, h) => h.some(i => i.type === "支出" && i.amount === 100) },
+    { id: "gen_exact_500", title: "ワンコインちょうど", desc: "ちょうど500円の支出を記録する", reward: 25, check: (u, h) => h.some(i => i.type === "支出" && i.amount === 500) },
+    { id: "gen_exact_1000", title: "1000円ポッキリ", desc: "ちょうど1,000円の支出を記録する", reward: 30, check: (u, h) => h.some(i => i.type === "支出" && i.amount === 1000) },
+    { id: "gen_over_1000", title: "千円超え", desc: "1,000円以上の支出を記録する", reward: 30, check: (u, h) => h.some(i => i.type === "支出" && i.amount >= 1000) },
+    { id: "gen_over_3000", title: "大きなお買い物", desc: "3,000円以上の支出を記録する", reward: 40, check: (u, h) => h.some(i => i.type === "支出" && i.amount >= 3000) },
+    { id: "gen_over_5000", title: "大奮発", desc: "5,000円以上の支出を記録する", reward: 60, check: (u, h) => h.some(i => i.type === "支出" && i.amount >= 5000) },
+    { id: "gen_over_10000", title: "超ビッグスクープ", desc: "10,000円以上の支出を記録する", reward: 100, check: (u, h) => h.some(i => i.type === "支出" && i.amount >= 10000) },
+    { id: "gen_zero_end", title: "ピッタリ価格", desc: "下2桁が「00」の金額を記録する", reward: 25, check: (u, h) => h.some(i => i.amount % 100 === 0) },
+    { id: "gen_odd_amount", title: "細かいお会計", desc: "端数（1円単位）のある金額を記録する", reward: 25, check: (u, h) => h.some(i => i.amount % 10 !== 0) },
+    { id: "gen_small_inc", title: "コツコツ収入", desc: "500円以下の収入を記録する", reward: 20, check: (u, h) => h.some(i => i.type === "収入" && i.amount <= 500) },
+
+    { id: "gen_sum_exp_1k", title: "通算1,000円使用", desc: "累計の支出が1,000円以上になる", reward: 30, check: (u, h) => h.filter(i => i.type === "支出").reduce((s, i) => s + i.amount, 0) >= 1000 },
+    { id: "gen_sum_exp_3k", title: "通算3,000円使用", desc: "累計の支出が3,000円以上になる", reward: 40, check: (u, h) => h.filter(i => i.type === "支出").reduce((s, i) => s + i.amount, 0) >= 3000 },
+    { id: "gen_sum_exp_5k", title: "通算5,000円使用", desc: "累計の支出が5,000円以上になる", reward: 50, check: (u, h) => h.filter(i => i.type === "支出").reduce((s, i) => s + i.amount, 0) >= 5000 },
+    { id: "gen_sum_exp_10k", title: "通算10,000円使用", desc: "累計の支出が10,000円以上になる", reward: 80, check: (u, h) => h.filter(i => i.type === "支出").reduce((s, i) => s + i.amount, 0) >= 10000 },
+    { id: "gen_sum_exp_30k", title: "通算30,000円使用", desc: "累計の支出が30,000円以上になる", reward: 120, check: (u, h) => h.filter(i => i.type === "支出").reduce((s, i) => s + i.amount, 0) >= 30000 },
+    { id: "gen_sum_exp_50k", title: "通算50,000円使用", desc: "累計の支出が50,000円以上になる", reward: 180, check: (u, h) => h.filter(i => i.type === "支出").reduce((s, i) => s + i.amount, 0) >= 50000 },
+
+    { id: "gen_sum_inc_1k", title: "通算1,000円獲得", desc: "累計の収入が1,000円以上になる", reward: 30, check: (u, h) => h.filter(i => i.type === "収入").reduce((s, i) => s + i.amount, 0) >= 1000 },
+    { id: "gen_sum_inc_3k", title: "通算3,000円獲得", desc: "累計の収入が3,000円以上になる", reward: 40, check: (u, h) => h.filter(i => i.type === "収入").reduce((s, i) => s + i.amount, 0) >= 3000 },
+    { id: "gen_sum_inc_5k", title: "通算5,000円獲得", desc: "累計の収入が5,000円以上になる", reward: 60, check: (u, h) => h.filter(i => i.type === "収入").reduce((s, i) => s + i.amount, 0) >= 5000 },
+    { id: "gen_sum_inc_10k", title: "通算10,000円獲得", desc: "累計の収入が10,000円以上になる", reward: 90, check: (u, h) => h.filter(i => i.type === "収入").reduce((s, i) => s + i.amount, 0) >= 10000 },
+    { id: "gen_sum_inc_30k", title: "通算30,000円獲得", desc: "累計の収入が30,000円以上になる", reward: 150, check: (u, h) => h.filter(i => i.type === "収入").reduce((s, i) => s + i.amount, 0) >= 30000 },
+    { id: "gen_sum_inc_50k", title: "通算50,000円獲得", desc: "累計の収入が50,000円以上になる", reward: 220, check: (u, h) => h.filter(i => i.type === "収入").reduce((s, i) => s + i.amount, 0) >= 50000 },
+
+    { id: "gen_has_memo", title: "一筆メモ", desc: "メモを入力して記録する", reward: 25, check: (u, h) => h.some(i => i.memo && i.memo.trim() !== "") },
+    { id: "gen_memo_3", title: "メモ書きの習慣", desc: "メモ付きの記録を通算3回行う", reward: 45, check: (u, h) => h.filter(i => i.memo && i.memo.trim() !== "").length >= 3 },
+    { id: "gen_memo_10", title: "詳細マニア", desc: "メモ付きの記録を通算10回行う", reward: 90, check: (u, h) => h.filter(i => i.memo && i.memo.trim() !== "").length >= 10 },
+    { id: "gen_no_memo", title: "シンプル記録", desc: "メモなしで素早く記録する", reward: 15, check: (u, h) => h.some(i => !i.memo || i.memo.trim() === "") },
+    { id: "gen_tag_other", title: "その他の記録", desc: "「その他」のカテゴリで記録する", reward: 20, check: (u, h) => h.some(i => i.tag === "unknown") },
+
+    { id: "gen_both_nw", title: "両立マスター", desc: "NeedsとWantsの両方を1回以上記録する", reward: 30, check: (u, h) => h.some(i => i.category === "Needs") && h.some(i => i.category === "Wants") },
+    { id: "gen_both_exp_inc", title: "収支の記録", desc: "支出と収入の両方を1回以上記録する", reward: 30, check: (u, h) => h.some(i => i.type === "支出") && h.some(i => i.type === "収入") },
+    { id: "gen_multi_days", title: "複数日の記録", desc: "異なる日付の記録が3日分以上ある", reward: 40, check: (u, h) => new Set(h.map(i => i.date)).size >= 3 },
+    { id: "gen_multi_days_7", title: "1週間分蓄積", desc: "異なる日付の記録が7日分以上ある", reward: 70, check: (u, h) => new Set(h.map(i => i.date)).size >= 7 },
+    { id: "gen_same_day_3", title: "まとめ記録", desc: "同じ日付に3回以上記録する", reward: 35, check: (u, h) => {
+      const counts = {};
+      h.forEach(i => { counts[i.date] = (counts[i.date] || 0) + 1; });
+      return Object.values(counts).some(c => c >= 3);
+    }}
+  ];
+  function calculateWallet(u, h) {
+    if (!u) return 0;
+    let needsSum = 0; let wantsSum = 0; let incomeSum = 0;
+    h.forEach(item => {
+      if (item.type === '収入') incomeSum += item.amount;
+      else if (item.category === 'Needs') needsSum += item.amount;
+      else if (item.category === 'Wants') wantsSum += item.amount;
+    });
+    let wallet = u.initialBalance + incomeSum - (needsSum + wantsSum);
+    return wallet > MAX_BALANCE ? MAX_BALANCE : wallet;
+  }
+
+  function getTitle(lvl) {
+    if (lvl >= 30) return "賢い消費者";
+    if (lvl >= 20) return "お小遣いマスター";
+    if (lvl >= 10) return "買い物の達人";
+    return "お買い物見習い";
+  }
+
   function getRequiredTotalXp(level) {
     if (level <= 1) return 0;
     let total = 0;
     for (let i = 1; i < level; i++) {
-      total += i * 50;
+      total += i * 30;
     }
     return total;
   }
 
-  // 現在のXPからレベルを算出する関数
   function calculateLevelFromXp(xp) {
     let lvl = 1;
-    while (true) {
+    while (lvl < 99) {
       if (xp < getRequiredTotalXp(lvl + 1)) {
         return lvl;
       }
       lvl++;
     }
+    return 99;
   }
 
-  window.addEventListener('load', async () => {
-    // 誕生日の「日」のプルダウン（1〜31日）を自動作成
-    const daySelect = document.getElementById('acc-birth-day');
-    for (let i = 1; i <= 31; i++) {
-      let opt = document.createElement('option');
-      opt.value = i;
-      opt.innerText = `${i}日`;
-      daySelect.appendChild(opt);
-    }
-
-    const savedUID = localStorage.getItem('smart_consumer_uid');
-    if (savedUID) {
-      myUID = savedUID;
-      if (myUID === "ADMIN_USER") {
-        switchSection('admin');
-        loadAdminData();
-        return;
-      }
-      try {
-        const d = await getDoc(doc(db, "users", myUID));
-        if (d.exists()) {
-          userAccount = d.data();
-          if(userAccount.xp === undefined) { userAccount.xp = 0; userAccount.level = 1; }
-          
-          const q = query(collection(db, "users", myUID, "history"));
-          const querySnapshot = await getDocs(q);
-          transactionHistory = [];
-          querySnapshot.forEach((doc) => { transactionHistory.push(doc.data()); });
-          
-          document.getElementById('app-nav').style.display = 'flex';
-          switchSection('home');
+  async function checkLoginBonus() {
+    if (!userAccount || myUID === "ADMIN_USER") return;
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}`;
+    
+    if (userAccount.lastLoginDate !== todayStr) {
+      let streak = userAccount.streak || 0;
+      if (userAccount.lastLoginDate) {
+        const lastDate = new Date(userAccount.lastLoginDate);
+        const diffTime = Math.abs(now - lastDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays <= 2) {
+          streak += 1;
         } else {
-          switchSection('login');
+          streak = 1;
+        }
+      } else {
+        streak = 1;
+      }
+
+      const streakBonus = streak * 2;
+      const gainedXp = 10 + streakBonus;
+      const oldXp = userAccount.xp || 0;
+      const newXp = oldXp + gainedXp;
+      const oldLvl = userAccount.level || 1;
+      const newLvl = calculateLevelFromXp(newXp);
+
+      userAccount.xp = newXp;
+      userAccount.level = newLvl;
+      userAccount.streak = streak;
+      userAccount.lastLoginDate = todayStr;
+
+      try {
+        await setDoc(doc(db, "users", myUID), userAccount);
+        alert(`ログインボーナス！ ${streak}日連続達成で ${gainedXp}XP (基本10XP + ボーナス${streakBonus}XP) を獲得しました！`);
+        if (newLvl > oldLvl) {
+          triggerLevelUpEffects(oldLvl, newLvl);
         }
       } catch(e) {
-        switchSection('login');
+        console.error(e);
+      }
+    }
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      myUID = user.uid;
+      if (user.email === ADMIN_EMAIL) {
+        switchSection('admin');
+        loadAdminData();
+      } else {
+        try {
+          const d = await getDoc(doc(db, "users", myUID));
+          if (d.exists()) {
+            userAccount = d.data();
+            if (userAccount.xp === undefined) { userAccount.xp = 0; userAccount.level = 1; }
+            if (userAccount.streak === undefined) { userAccount.streak = 1; }
+            if (userAccount.claimedAchievements === undefined) { userAccount.claimedAchievements = []; }
+            
+            const q = query(collection(db, "users", myUID, "history"));
+            const querySnapshot = await getDocs(q);
+            transactionHistory = [];
+            querySnapshot.forEach((doc) => { transactionHistory.push(doc.data()); });
+            
+            document.getElementById('app-nav').style.display = 'flex';
+            await checkLoginBonus();
+            switchSection('home');
+          } else {
+            switchSection('login');
+          }
+        } catch(e) {
+          console.error(e);
+          switchSection('login');
+        }
+      }
+    } else {
+      switchSection('login');
+    }
+  });
+
+  window.addEventListener('load', () => {
+    const daySelect = document.getElementById('acc-birth-day');
+    if (daySelect) {
+      for (let i = 1; i <= 31; i++) {
+        let opt = document.createElement('option');
+        opt.value = i;
+        opt.innerText = `${i}日`;
+        daySelect.appendChild(opt);
       }
     }
   });
 
-  // 年齢と誕生日から誕生年を自動計算（2026年基準）
   window.calculateBirthYear = function() {
     const ageInput = document.getElementById('acc-age').value;
     const monthInput = document.getElementById('acc-birth-month').value;
@@ -462,20 +710,18 @@
       const month = parseInt(monthInput);
       const day = parseInt(dayInput);
       
-      // 基準日：2026年7月17日
-      const todayYear = 2026;
-      const todayMonth = 7;
-      const todayDay = 17;
+      const now = new Date();
+      const todayYear = now.getFullYear();
+      const todayMonth = now.getMonth() + 1;
+      const todayDay = now.getDate();
       
       let birthYear = todayYear - age;
-      
-      // 今年の誕生日がまだ来ていない場合は誕生年を1年引く
       if (month > todayMonth || (month === todayMonth && day > todayDay)) {
-        birthYear = birthYear - 1;
+        birthYear -= 1;
       }
       
       displayInput.value = `${birthYear}年 ${month}月${day}日 生まれ`;
-      displayInput.dataset.calculatedYear = birthYear; // 一時データとして保持
+      displayInput.dataset.calculatedYear = birthYear;
     } else {
       displayInput.value = "";
       delete displayInput.dataset.calculatedYear;
@@ -487,71 +733,47 @@
     document.getElementById(`sec-${secName}`).classList.add('active');
     
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
-    if(secName === 'home' || secName === 'calendar') {
+    if (secName === 'home' || secName === 'calendar' || secName === 'achievements') {
       document.getElementById(`nav-${secName}`).classList.add('active-nav');
     }
 
-    if(secName === 'home') { updateHomeGraph(); }
-    if(secName === 'calendar') { renderCalendar(); }
+    if (secName === 'home') { updateHomeGraph(); }
+    if (secName === 'calendar') { renderCalendar(); }
+    if (secName === 'achievements') { renderAchievements(); }
+    if (secName === 'admin') { loadAdminData(); }
   }
 
   window.login = async function() {
-    const user = document.getElementById('login-username').value.trim();
+    const userInput = document.getElementById('login-username').value.trim();
     const pass = document.getElementById('login-password').value.trim();
 
-    if(!user || !pass) { alert("ユーザー名とパスワードを入力してください。"); return; }
+    if (!userInput || !pass) { alert("ユーザーネーム（またはメール）とパスワードを入力してください。"); return; }
 
-    if(user === "admin" && pass === "admin123") {
-      myUID = "ADMIN_USER";
-      localStorage.setItem('smart_consumer_uid', myUID);
-      switchSection('admin');
-      loadAdminData();
-      return;
-    }
+    const email = userInput.includes('@') ? userInput : `${userInput}@smart-consumer.com`;
 
     try {
-      const q = query(collection(db, "users"), where("username", "==", user), where("password", "==", pass));
-      const querySnapshot = await getDocs(q);
-      
-      if(!querySnapshot.empty) {
-        const userDoc = querySnapshot.docs[0];
-        myUID = userDoc.id;
-        userAccount = userDoc.data();
-        localStorage.setItem('smart_consumer_uid', myUID);
-
-        const hQ = query(collection(db, "users", myUID, "history"));
-        const hSnapshot = await getDocs(hQ);
-        transactionHistory = [];
-        hSnapshot.forEach((doc) => { transactionHistory.push(doc.data()); });
-
-        document.getElementById('app-nav').style.display = 'flex';
-        switchSection('home');
-      } else {
-        alert("ユーザーネームまたはパスワードが違います。");
-      }
+      await signInWithEmailAndPassword(auth, email, pass);
     } catch(e) {
-      alert("ログイン中にエラーが発生しました。");
+      alert("ログインに失敗しました。ユーザーネームまたはパスワードを確認してください。");
     }
   }
 
   window.logout = function() {
-    localStorage.removeItem('smart_consumer_uid');
-    userAccount = null;
-    transactionHistory = [];
-    document.getElementById('app-nav').style.display = 'none';
-    switchSection('login');
+    signOut(auth).then(() => {
+      userAccount = null;
+      transactionHistory = [];
+      document.getElementById('app-nav').style.display = 'none';
+      switchSection('login');
+    });
   }
 
-  window.goToRegisterStep1 = function() {
-    switchSection('account-step1');
-  }
+  window.goToRegisterStep1 = function() { switchSection('account-step1'); }
 
   window.goToRegisterStep2 = function() {
     const name = document.getElementById('acc-name').value;
     const age = parseInt(document.getElementById('acc-age').value);
-    const initBalance = parseInt(document.getElementById('acc-balance').value) || 0;
+    let initBalance = parseInt(document.getElementById('acc-balance').value) || 0;
     const birthYearDisplay = document.getElementById('acc-birthyear-display');
-    
     const month = document.getElementById('acc-birth-month').value;
     const day = document.getElementById('acc-birth-day').value;
 
@@ -560,12 +782,14 @@
       return; 
     }
 
-    const calculatedYear = parseInt(birthYearDisplay.dataset.calculatedYear);
+    if (initBalance > MAX_BALANCE) {
+      alert('所持金の上限は1,000,000円です。1,000,000円に設定します。');
+      initBalance = MAX_BALANCE;
+    }
 
+    const calculatedYear = parseInt(birthYearDisplay.dataset.calculatedYear);
     const checkedHobbies = [];
-    document.querySelectorAll('.hobby-cb:checked').forEach(cb => {
-      checkedHobbies.push(cb.value);
-    });
+    document.querySelectorAll('.hobby-cb:checked').forEach(cb => checkedHobbies.push(cb.value));
 
     tempProfile = {
       name: name,
@@ -575,7 +799,10 @@
       initialBalance: initBalance,
       hobbies: checkedHobbies,
       xp: 0,
-      level: 1
+      level: 1,
+      streak: 1,
+      lastLoginDate: "",
+      claimedAchievements: []
     };
 
     switchSection('account-step2');
@@ -585,50 +812,65 @@
     const user = document.getElementById('acc-username').value.trim();
     const pass = document.getElementById('acc-password').value.trim();
 
-    if(!user || !pass) { alert('ユーザーネームとパスワードを決めてください。'); return; }
+    if (!user || !pass) { alert('ユーザーネームとパスワードを決めてください。'); return; }
 
-    const checkQ = query(collection(db, "users"), where("username", "==", user));
-    const checkSnapshot = await getDocs(checkQ);
-    if(!checkSnapshot.empty || user === "admin") {
-      alert("そのユーザーネームは既に使われています。別の名前を試してください。");
-      return;
-    }
-
-    userAccount = {
-      ...tempProfile,
-      username: user,
-      password: pass
-    };
-
-    myUID = "user_" + Math.random().toString(36).substring(2, 11);
+    const email = `${user}@smart-consumer.com`;
 
     try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+      myUID = userCredential.user.uid;
+
+      userAccount = {
+        ...tempProfile,
+        username: user
+      };
+
       await setDoc(doc(db, "users", myUID), userAccount);
-      localStorage.setItem('smart_consumer_uid', myUID);
-      document.getElementById('app-nav').style.display = 'flex';
-      switchSection('home');
     } catch(e) {
-      alert("アカウント作成に失敗しました。");
+      if (e.code === 'auth/email-already-in-use') {
+        alert("そのユーザーネームは既に使われています。別の名前を試してください。");
+      } else {
+        alert("アカウント作成に失敗しました: " + e.message);
+      }
     }
   }
 
   async function loadAdminData() {
     const listDiv = document.getElementById('admin-user-list');
-    listDiv.innerHTML = "読み込み中...";
+    listDiv.innerHTML = "データを読み込み中...";
 
     try {
       const usersSnapshot = await getDocs(collection(db, "users"));
+      const displayUsers = [];
+
+      usersSnapshot.forEach(uDoc => {
+        displayUsers.push({
+          uid: uDoc.id,
+          profile: uDoc.data()
+        });
+      });
+
       listDiv.innerHTML = "";
 
-      for (const uDoc of usersSnapshot.docs) {
-        const uData = uDoc.data();
-        if(uData.username === "admin") continue;
+      if (displayUsers.length === 0) {
+        listDiv.innerHTML = "<p style='text-align:center;'>表示できるユーザーアカウントがありません。</p>";
+        return;
+      }
 
-        const targetUID = uDoc.id;
-        const histSnapshot = await getDocs(collection(db, "users", targetUID, "history"));
-        let histHTML = "";
+      for (const user of displayUsers) {
+        const uData = user.profile;
+        const uid = user.uid;
+
+        const histSnapshot = await getDocs(collection(db, "users", uid, "history"));
+        let histories = [];
         histSnapshot.forEach(hDoc => {
-          const h = hDoc.data();
+          histories.push(hDoc.data());
+        });
+
+        histories.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        let histHTML = "";
+        histories.forEach(h => {
           histHTML += `<li>${h.date} | [${h.type}] ${h.category || ''} (${h.tag || ''}) : <strong>${h.amount}円</strong></li>`;
         });
 
@@ -637,79 +879,78 @@
         userCard.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <h3 style="margin: 0 0 5px 0;">${uData.name}さん (${uData.age}歳)</h3>
-            <button class="btn-danger" style="width: auto; padding: 4px 10px; font-size: 11px; margin: 0;" onclick="deleteUserAccount('${targetUID}', '${uData.name}')">
+            <button class="btn-danger" style="width: auto; padding: 4px 10px; font-size: 11px; margin: 0;" onclick="deleteUserAccount('${uid}', '${uData.name}')">
               アカウント削除
             </button>
           </div>
           <p style="font-size:12px; color:#666; margin:0;">
-            ユーザーID: ${targetUID}<br>
-            ログインID: <strong>${uData.username}</strong> / パスワード: <strong>${uData.password}</strong><br>
-            生年月日: ${uData.birthYear}年 ${uData.birthday || ''}<br>
-            レベル: Lv.${uData.level || 1} (${uData.xp || 0} XP) | 初期所持金: ${uData.initialBalance}円
+            ユーザーID: <strong>${uData.username}</strong><br>
+            生年月日: ${uData.birthYear || '-'}年 ${uData.birthday || ''}<br>
+            レベル: Lv.${uData.level || 1} (${uData.xp || 0} XP) | 連続記録: ${uData.streak || 1}日目<br>
+            初期所持金: ${uData.initialBalance}円
           </p>
-          <h4 style="margin: 10px 0 5px 0; font-size:13px;">家計簿記録一覧:</h4>
-          <ul style="font-size:12px; padding-left:20px; margin:0;">
+          <h4 style="margin: 10px 0 5px 0; font-size:13px;">家計簿記録一覧 (合計 ${histories.length} 件):</h4>
+          <ul style="font-size:12px; padding-left:20px; margin:0; max-height: 150px; overflow-y: auto;">
             ${histHTML ? histHTML : '<span style="color:#ae3ec9;">記録なし</span>'}
           </ul>
         `;
         listDiv.appendChild(userCard);
       }
     } catch(e) {
-      listDiv.innerHTML = "データの取得に失敗しました。";
+      console.error(e);
+      listDiv.innerHTML = "データの取得に失敗しました（権限がありません）。";
     }
   }
 
-  // アカウント削除機能
-  window.deleteUserAccount = async function(targetUID, userName) {
-    const confirmDelete = confirm(`【注意】本当に「${userName}」さんのアカウントと家計簿データをすべて削除しますか？\n（この操作は元に戻せません）`);
+  window.deleteUserAccount = async function(uid, userName) {
+    const confirmDelete = confirm(`「${userName}」さんのアカウントを削除しますか？`);
     if (!confirmDelete) return;
 
     try {
       const batch = writeBatch(db);
-
-      const histSnapshot = await getDocs(collection(db, "users", targetUID, "history"));
-      histSnapshot.forEach(hDoc => {
-        batch.delete(hDoc.ref);
-      });
-
-      const userRef = doc(db, "users", targetUID);
-      batch.delete(userRef);
+      const histSnapshot = await getDocs(collection(db, "users", uid, "history"));
+      histSnapshot.forEach(hDoc => { batch.delete(hDoc.ref); });
+      batch.delete(doc(db, "users", uid));
 
       await batch.commit();
-
-      alert(`「${userName}」さんのデータをすべて正常に削除しました。`);
+      alert(`「${userName}」さんのアカウントを削除しました。`);
       loadAdminData();
     } catch(e) {
       console.error(e);
-      alert("データの削除処理中にエラーが発生しました。");
+      alert("削除処理中にエラーが発生しました。");
     }
   }
 
-  const titles = ["お買い物見習い", "買い物の達人", "お小遣いマスター", "賢い消費者"];
-  function getTitle(lvl) {
-    if (lvl >= 4) return titles[3];
-    return titles[lvl - 1] || titles[0];
-  }
-
   function updateHomeGraph() {
-    if(!userAccount) return;
-    document.getElementById('home-welcome').innerText = `こんにちは、${userAccount.name}さん (${userAccount.age}歳)`;
+    if (!userAccount) return;
+    document.getElementById('home-welcome').innerText = `こんにちは、${userAccount.name}さん `;
     
-    const birthString = userAccount.birthday ? `${userAccount.birthYear}年 ${userAccount.birthday} 生まれ` : `${userAccount.birthYear}年生まれ`;
+    const birthString = userAccount.birthday ? `${userAccount.birthYear}年 ${userAccount.birthday} 生まれ` : `${userAccount.birthYear || '-'}年生まれ`;
     document.getElementById('home-birth-year').innerText = birthString;
 
     const currentLvl = userAccount.level || 1;
     const currentXp = userAccount.xp || 0;
+    const currentStreak = userAccount.streak || 1;
 
     const baseTotalXp = getRequiredTotalXp(currentLvl);
     const nextTotalXp = getRequiredTotalXp(currentLvl + 1);
     const xpNeededForThisLvl = nextTotalXp - baseTotalXp;
     const xpInThisLvl = currentXp - baseTotalXp;
-    const xpPercent = Math.min((xpInThisLvl / xpNeededForThisLvl) * 100, 100);
+    
+    let xpPercent = 100;
+    if (currentLvl < 99) {
+      xpPercent = Math.min((xpInThisLvl / xpNeededForThisLvl) * 100, 100);
+    }
 
     document.getElementById('status-level').innerText = `Lv.${currentLvl}`;
     document.getElementById('status-title').innerText = getTitle(currentLvl);
-    document.getElementById('status-xp-text').innerText = `${xpInThisLvl} / ${xpNeededForThisLvl} XP`;
+    document.getElementById('status-streak').innerText = `連続記録：${currentStreak}日目`;
+    
+    if (currentLvl >= 99) {
+      document.getElementById('status-xp-text').innerText = `MAX (${currentXp} XP)`;
+    } else {
+      document.getElementById('status-xp-text').innerText = `${xpInThisLvl} / ${xpNeededForThisLvl} XP`;
+    }
     
     setTimeout(() => {
       document.getElementById('status-xp-bar').style.width = `${xpPercent}%`;
@@ -718,19 +959,25 @@
     let needsSum = 0; let wantsSum = 0; let incomeSum = 0;
     
     transactionHistory.forEach(item => {
-      if(item.type === '収入') incomeSum += item.amount;
-      else if(item.category === 'Needs') needsSum += item.amount;
-      else if(item.category === 'Wants') wantsSum += item.amount;
+      if (item.type === '収入') incomeSum += item.amount;
+      else if (item.category === 'Needs') needsSum += item.amount;
+      else if (item.category === 'Wants') wantsSum += item.amount;
     });
 
-    let currentWallet = userAccount.initialBalance + incomeSum - (needsSum + wantsSum);
-    document.getElementById('home-current-wallet').innerText = `いまのお財布：${currentWallet} 円`;
-    document.getElementById('home-summary').innerHTML = `Needs: ${needsSum}円 / Wants: ${wantsSum}円`;
+    let calculatedWallet = userAccount.initialBalance + incomeSum - (needsSum + wantsSum);
+    let isMax = false;
+    if (calculatedWallet > MAX_BALANCE) {
+      calculatedWallet = MAX_BALANCE;
+      isMax = true;
+    }
+
+    document.getElementById('home-current-wallet').innerText = `いまのお財布：${calculatedWallet.toLocaleString()} 円${isMax ? ' (上限)' : ''}`;
+    document.getElementById('home-summary').innerHTML = `Needs: ${needsSum.toLocaleString()}円 / Wants: ${wantsSum.toLocaleString()}円`;
 
     const ctx = document.getElementById('ratioChart').getContext('2d');
     if (chartInstance) { chartInstance.destroy(); } 
     
-    if(needsSum === 0 && wantsSum === 0) {
+    if (needsSum === 0 && wantsSum === 0) {
       chartInstance = new Chart(ctx, {
         type: 'doughnut',
         data: { labels: ['データなし'], datasets: [{ data: [1], backgroundColor: ['#e9ecef'] }] }
@@ -751,38 +998,148 @@
   function renderCalendar() {
     const container = document.getElementById('calendar-days');
     container.innerHTML = '';
-    const startDayOffset = 3; 
-    const totalDays = 31;
-    
-    for(let i=0; i<startDayOffset; i++) {
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+    const todayDate = now.getDate();
+
+    document.getElementById('calendar-title').innerText = `${currentYear}年 ${currentMonth}月`;
+
+    const firstDayOfWeek = new Date(currentYear, currentMonth - 1, 1).getDay();
+    const totalDays = new Date(currentYear, currentMonth, 0).getDate();
+
+    for (let i = 0; i < firstDayOfWeek; i++) {
       let emptyDiv = document.createElement('div');
       container.appendChild(emptyDiv);
     }
-    
-    for(let day=1; day<=totalDays; day++) {
-      let dayString = `2026-07-${day.toString().padStart(2, '0')}`;
+
+    for (let day = 1; day <= totalDays; day++) {
+      let monthString = currentMonth.toString().padStart(2, '0');
+      let dayStringFormatted = day.toString().padStart(2, '0');
+      let dayString = `${currentYear}-${monthString}-${dayStringFormatted}`;
+
       let dayDiv = document.createElement('div');
       dayDiv.classList.add('calendar-day');
-      dayDiv.innerText = day;
       
-      let dayNeeds = 0; let dayWants = 0;
+      if (day === todayDate) {
+        dayDiv.classList.add('bg-today');
+      }
+
+      dayDiv.innerText = day;
+
+      let dayNeeds = 0;
+      let dayWants = 0;
+
       transactionHistory.forEach(h => {
-        if(h.date === dayString && h.type === '支出') {
-          if(h.category === 'Needs') dayNeeds += h.amount;
-          if(h.category === 'Wants') dayWants += h.amount;
+        if (h.date === dayString && h.type === '支出') {
+          if (h.category === 'Needs') dayNeeds += h.amount;
+          if (h.category === 'Wants') dayWants += h.amount;
         }
       });
-      
-      if(dayNeeds > 0 && dayWants === 0) dayDiv.classList.add('bg-needs');
-      else if(dayWants > 0 && dayNeeds === 0) dayDiv.classList.add('bg-wants');
-      else if(dayNeeds > 0 && dayWants > 0) dayDiv.classList.add('bg-both');
-      
+
+      if (dayNeeds > 0 && dayWants === 0) dayDiv.classList.add('bg-needs');
+      else if (dayWants > 0 && dayNeeds === 0) dayDiv.classList.add('bg-wants');
+      else if (dayNeeds > 0 && dayWants > 0) dayDiv.classList.add('bg-both');
+
       dayDiv.onclick = () => {
         selectedDate = dayString;
         openInputScreen();
       };
-      
+
       container.appendChild(dayDiv);
+    }
+  }
+
+  function renderAchievements() {
+    if (!userAccount) return;
+    const listDiv = document.getElementById('achievement-list');
+    listDiv.innerHTML = '';
+
+    if (!userAccount.claimedAchievements) {
+      userAccount.claimedAchievements = [];
+    }
+
+    let completedCount = 0;
+
+    const processedList = MASTER_ACHIEVEMENTS.map(ach => {
+      const isFulfilled = ach.check(userAccount, transactionHistory);
+      const isClaimed = userAccount.claimedAchievements.includes(ach.id);
+
+      if (isClaimed) completedCount++;
+
+      let priority = 1;
+      if (isClaimed) {
+        priority = 2;
+      } else if (isFulfilled) {
+        priority = 0;
+      }
+
+      return {
+        ...ach,
+        isFulfilled,
+        isClaimed,
+        priority
+      };
+    });
+
+    processedList.sort((a, b) => a.priority - b.priority);
+
+    processedList.forEach(ach => {
+      const card = document.createElement('div');
+      card.classList.add('achievement-card');
+      if (ach.isClaimed) card.classList.add('completed');
+
+      let actionButtonHTML = '';
+      if (ach.isClaimed) {
+        actionButtonHTML = `<span style="font-weight: bold; font-size: 12px; color: #12b886;">達成済み</span>`;
+      } else if (ach.isFulfilled) {
+        actionButtonHTML = `<button class="btn-success" style="width: auto; padding: 6px 12px; margin: 0; font-size: 12px;" onclick="claimReward('${ach.id}', ${ach.reward})">受領 +${ach.reward}XP</button>`;
+      } else {
+        actionButtonHTML = `<span style="font-weight: bold; font-size: 12px; color: #adb5bd;">未達成</span>`;
+      }
+
+      card.innerHTML = `
+        <div class="achievement-info">
+          <div class="achievement-title">${ach.title}</div>
+          <div class="achievement-desc">${ach.desc}</div>
+          <div class="achievement-reward">報酬: +${ach.reward} XP</div>
+        </div>
+        <div>${actionButtonHTML}</div>
+      `;
+
+      listDiv.appendChild(card);
+    });
+
+    const totalCount = MASTER_ACHIEVEMENTS.length;
+    document.getElementById('achievement-progress-text').innerText = `${completedCount} / ${totalCount}`;
+    const percent = (completedCount / totalCount) * 100;
+    document.getElementById('achievement-progress-bar').style.width = `${percent}%`;
+  }
+
+  window.claimReward = async function(achId, rewardXp) {
+    if (!userAccount) return;
+    if (!userAccount.claimedAchievements) { userAccount.claimedAchievements = []; }
+
+    userAccount.claimedAchievements.push(achId);
+
+    const oldXp = userAccount.xp || 0;
+    const newXp = oldXp + rewardXp;
+    const oldLvl = userAccount.level || 1;
+    const newLvl = calculateLevelFromXp(newXp);
+
+    userAccount.xp = newXp;
+    userAccount.level = newLvl;
+
+    try {
+      await setDoc(doc(db, "users", myUID), userAccount);
+      alert(`実績達成！ ${rewardXp} XPを獲得しました！`);
+      if (newLvl > oldLvl) {
+        triggerLevelUpEffects(oldLvl, newLvl);
+      }
+      renderAchievements();
+    } catch(e) {
+      alert("報酬の受け取りに失敗しました。");
     }
   }
 
@@ -800,7 +1157,7 @@
     document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
     document.querySelector(`.type-btn[data-val="${type}"]`).classList.add('selected');
     
-    if(type === '収入') {
+    if (type === '収入') {
       document.getElementById('nw-wrapper').style.display = 'none';
       document.getElementById('tag-wrapper').style.display = 'none';
       currentNW = 'Income';
@@ -815,10 +1172,10 @@
     currentNW = nw;
     document.querySelectorAll('.nw-btn').forEach(b => b.classList.remove('selected'));
     const btn = document.querySelector(`.nw-btn[data-val="${nw}"]`);
-    if(btn) btn.classList.add('selected');
+    if (btn) btn.classList.add('selected');
     
     const tagWrapper = document.getElementById('tag-wrapper');
-    if(nw === 'Wants') {
+    if (nw === 'Wants') {
       tagWrapper.style.display = 'block';
       buildHobbyButtons(); 
     } else {
@@ -854,7 +1211,7 @@
     element.classList.add('selected');
     
     const memoInput = document.getElementById('input-memo');
-    if(tag === 'unknown') {
+    if (tag === 'unknown') {
       memoInput.style.display = 'block';
     } else {
       memoInput.style.display = 'none';
@@ -899,9 +1256,9 @@
 
   window.saveTransaction = async function() {
     const amount = parseInt(document.getElementById('input-amount').value);
-    if(!amount || amount <= 0) { alert('金額を入力してください。'); return; }
-    if(currentType === '支出' && !currentNW) { alert('NeedsかWantsか選んでください。'); return; }
-    if(currentNW === 'Wants' && !currentTag) { alert('何に使ったか選んでください。'); return; }
+    if (!amount || amount <= 0) { alert('金額を入力してください。'); return; }
+    if (currentType === '支出' && !currentNW) { alert('NeedsかWantsか選んでください。'); return; }
+    if (currentNW === 'Wants' && !currentTag) { alert('何に使ったか選んでください。'); return; }
     
     const memo = document.getElementById('input-memo').value;
     const newRecord = {
@@ -917,7 +1274,6 @@
     const oldXp = userAccount.xp || 0;
     const newXp = oldXp + 10;
     const oldLvl = userAccount.level || 1;
-    
     const newLvl = calculateLevelFromXp(newXp);
 
     userAccount.xp = newXp;
@@ -928,7 +1284,7 @@
       await setDoc(doc(db, "users", myUID), userAccount);
       transactionHistory.push(newRecord);
 
-      if(newLvl > oldLvl) {
+      if (newLvl > oldLvl) {
         triggerLevelUpEffects(oldLvl, newLvl);
       }
       switchSection('home');
@@ -937,6 +1293,5 @@
     }
   }
 </script>
-
 </body>
 </html>
